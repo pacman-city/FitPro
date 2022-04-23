@@ -1,51 +1,52 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class InfoMessage:
     """
     Информационное сообщение о тренировке.
     Получает данные из класса тренировка и создает
     сообщение - строку для вывода на экран.
-    Методы класса:
-    get_message
+    Методы класса: get_message
     """
+    training_type: str
+    duration: int
+    distance: float
+    speed: float
+    calories: float
 
-    def __init__(
-            self,
-            training_type: str,
-            duration: int,
-            distance: float,
-            speed: float,
-            calories: float) -> None:
-        self.speed: float = speed
-        self.duration: int = duration
-        self.calories: float = calories
-        self.distance: float = distance
-        self.training_type: str = training_type
+    MESSAGE = ('Тип тренировки: {training_type}; '
+               'Длительность: {duration} ч.; '
+               'Дистанция: {distance} км; '
+               'Ср. скорость: {speed} км/ч; '
+               'Потрачено ккал: {calories}.')
+
+    def __setattr__(self, key, value):
+        """Все числовые значения округлять до 3 знаком после запятой."""
+        value = (f'{value:.3f}'
+                 if type(value) in (int, float)
+                 else value)
+        return object.__setattr__(self, key, value)
 
     def get_message(self):
-        """
-        Преобразовать данные в строку и округлить
-        числовые значения до 3 знаком после запятой.
-        """
-        return (f'Тип тренировки: {self.training_type}; '
-                f'Длительность: {self.duration:.3f} ч.; '
-                f'Дистанция: {self.distance:.3f} км; '
-                f'Ср. скорость: {self.speed:.3f} км/ч; '
-                f'Потрачено ккал: {self.calories:.3f}.')
+        """Вернуть строку с полученными данными."""
+        return self.MESSAGE.format(**self.__dict__)
 
 
 class Training:
     """
     Базовый класс тренировки.
-    Передает медод для вывода сообщения на экран другим
+    Передает метод для вывода сообщения на экран другим
     наследующим классам.
     Создает методы вычисления пройденного расстояния и средней
     скорости для наследующих классов, кроме класса swim.
-    Описывает сруктуру наследующик класов.
-    Memoды класса: [get_distance, get_mean_speed, get_spent_calories
-    show_training_info]
+    Описывает структуру наследующих классов.
+    Методы класса:
+    get_distance | get_mean_speed | get_spent_calories | show_training_info
    """
-    LEN_STEP: float = 0.65
-    M_IN_KM: int = 1000
-    MIN_IN_H: int = 60
+    LEN_STEP: float = 0.65  # meters in human step
+    M_IN_KM: float = 1000.0  # meters in kilometer
+    MIN_IN_H: float = 60.0  # minutes in hour
 
     def __init__(
             self,
@@ -53,57 +54,50 @@ class Training:
             duration: int,
             weight: float) -> None:
         self.duration: int = duration
-        self. weight: float = weight
+        self.weight: float = weight
         self.action: int = action
 
     def get_distance(self) -> float:
-        """
-        Получить дистанцию (в километрах),
-        которую преодолел пользователь за время тренировки.
-        """
+        """Получить дистанцию (в километрах) за время тренировки."""
         traveled_in_total = self.action * self.LEN_STEP / self.M_IN_KM
         return traveled_in_total
 
     def get_mean_speed(self) -> float:
-        """
-        Получить среднюю скорость движения
-        во время тренировки в км/ч.
-        """
+        """Получить среднюю скорость движения в км/ч."""
         average_speed = self.get_distance() / self.duration
         return average_speed
 
     def get_spent_calories(self):
-        """
-        Получить количество затраченных калорий
-        израсходованных за время тренировки.
-        """
+        """Получить количество затраченных калорий за время тренировки."""
+        if __name__ == '__main__':
+            raise NotImplementedError
         pass
 
     def show_training_info(self) -> InfoMessage:
         """
         Вернуть сообщение о выполненной тренировке.
-        возвращает объект класса сообщения.
+        Возвращает объект класса сообщения.
         """
-        workout_session_mode = self.__class__.__name__
-        conducted_training_summary_report: InfoMessage = InfoMessage(
+        workout_session_mode = type(self).__name__
+        summary_training_report: InfoMessage = InfoMessage(
             workout_session_mode,
             self.duration,
             self.get_distance(),
             self.get_mean_speed(),
             self.get_spent_calories())
-        return conducted_training_summary_report
+        return summary_training_report
 
 
 class Running(Training):
     """
-    Класс создает оригинальный метод для рассчета калорий и вывода
-    инофрмации о тренировке бег с помощью метода show_training_info
+    Класс создает оригинальный метод для расчёта калорий и вывода
+    информации о тренировке бег с помощью метода show_training_info
     базового класса.
-    Memoды класса: [get_distance, get_mean_speed, get_spent_calories
-    show_training_info]
+    Методы класса:
+    get_distance | get_mean_speed | get_spent_calories | show_training_info
    """
-    CALORIES_MEAN_SPEED_SHIFT: float = 1.79
-    CALORIES_MEAN_SPEED_MULTIPLIER: int = 18
+    CALORIES_MEAN_SPEED_SHIFT: float = 1.79  # coefficient
+    CALORIES_MEAN_SPEED_MULTIPLIER: float = 18.0  # coefficient
 
     def __init__(
             self,
@@ -111,8 +105,6 @@ class Running(Training):
             duration: int,
             weight: float) -> None:
         super().__init__(action, duration, weight)
-        self. CALORIES_MEAN_SPEED_MULTIPLIER: int = 18
-        self.CALORIES_MEAN_SPEED_SHIFT: float = 1.79
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
@@ -120,22 +112,22 @@ class Running(Training):
         avg_s_adj = s + self.CALORIES_MEAN_SPEED_SHIFT
         weight_index = avg_s_adj * self.weight
         weight_index_per_minute = weight_index / self.M_IN_KM
-        kall = weight_index_per_minute * self.duration * self.MIN_IN_H
-        return kall
+        cal = weight_index_per_minute * self.duration * self.MIN_IN_H
+        return cal
 
 
 class SportsWalking(Training):
     """
-    Класс создает оригинальный метод для рассчета калорий и вывода
-    инофрмации о тренировке спортивная ходьба с помощью
+    Класс создает оригинальный метод для расчета калорий и вывода
+    информации о тренировке спортивная ходьба с помощью
     метода show_training_info базового класса.
-    Memoды класса: [get_distance, get_mean_speed, get_spent_calories
-    show_training_info]
+    Методы класса:
+    get_distance | get_mean_speed | get_spent_calories | show_training_info
    """
-    CM_IN_M: int = 100
-    KMH_IN_MSEC: float = 0.278
-    CALORIES_WEIGHT_MULTIPLIER: float = 0.035
-    CALORIES_SPEED_HEIGHT_MULTIPLIER: float = 0.029
+    CM_IN_M: float = 100.0  # sentiments in meter
+    KMH_IN_MSEC: float = 0.278  # kph to mps reformer
+    CALORIES_WEIGHT_MULTIPLIER: float = 0.035  # coefficient
+    CALORIES_SPEED_HEIGHT_MULTIPLIER: float = 0.029  # coefficient
 
     def __init__(
             self,
@@ -154,22 +146,22 @@ class SportsWalking(Training):
         cal_wt = self.CALORIES_SPEED_HEIGHT_MULTIPLIER * self.weight
         total_cals = (average_speed_mps ** 2 / height_in_m) * cal_wt
         weight_index_addition = weight_index + total_cals
-        kall = weight_index_addition * self.duration * self.MIN_IN_H
-        return kall
+        cal = weight_index_addition * self.duration * self.MIN_IN_H
+        return cal
 
 
 class Swimming(Training):
     """
-    Класс создает оригинальный метод для рассчета калорий
-    и вывода инофрмации о тренировке плавание с помощью
+    Класс создает оригинальный метод для расчета калорий
+    и вывода информации о тренировке плавание с помощью
     метода show_training_info базового класса.
     Переопределяет базовый метод получения средней скорости.
-    Memoды класса: [get_distance, get_mean_speed, get_spent_calories
-    show_training_info]
+    Методы класса:
+    get_distance | get_mean_speed | get_spent_calories | show_training_info
    """
-    CALORIES_MEAN_SPEED_SHIFT: float = 1.1
-    CALORIES_WEIGHT_MULTIPLIER: int = 2
-    LEN_STEP: float = 1.38
+    CALORIES_MEAN_SPEED_SHIFT: float = 1.1  # coefficient
+    CALORIES_WEIGHT_MULTIPLIER: float = 2.0  # coefficient
+    LEN_STEP: float = 1.38  # meters, swimming stroke length
 
     def __init__(
             self,
@@ -194,45 +186,66 @@ class Swimming(Training):
         speed = self.get_mean_speed() + self.CALORIES_MEAN_SPEED_SHIFT
         add_multiplier = self.CALORIES_WEIGHT_MULTIPLIER * self.weight
         calories_amount_by_speed_unit = add_multiplier * self.duration
-        kall = speed * calories_amount_by_speed_unit
-        return kall
+        cal = speed * calories_amount_by_speed_unit
+        return cal
+
+
+def verify_data(
+        workout_type: str,
+        training_types: list[str],
+        workout_data: list[int | float]):
+    if workout_type not in training_types:
+        raise TypeError(f'read package error: '
+                        f'unknown type of training: {workout_type}'
+                        f'acceptable types: {training_types}')
+    is_not_numbers = list(filter(lambda num:
+                                 type(num) not in (int, float),
+                                 workout_data)
+                          )
+    if len(is_not_numbers) > 0:
+        raise ValueError('read package error: '
+                         'incorrect data type, '
+                         'all values should be a number')
+
+    data_values_amount = {'SWM': 5, 'RUN': 3, 'WLK': 4}[workout_type]
+    if data_values_amount != len(workout_data):
+        raise ValueError('read package error: '
+                         'incorrect number of values received'
+                         f'training type: {workout_type} '
+                         f'should accept {data_values_amount} values')
 
 
 def read_package(
         workout_type: str,
-        data: list) -> Training:
-    """
-    Прочитать данные полученные от датчиков.
-    Определяет тип тренировки и создает instance класса тренировки.
-    """
-    select_class_variant_dicktionary = {
+        workout_data: list[int | float]) -> Training:
+    """Определяет тип тренировки и создает класс нужного типа"""
+    training_class = {
         'SWM': Swimming,
         'RUN': Running,
         'WLK': SportsWalking
     }
-    selected_class = select_class_variant_dicktionary[workout_type]
-    training = selected_class(*data)
+    training_types = [*training_class]  # not.keys(), cause IDK how to type it
+    verify_data(workout_type, training_types, workout_data)
+
+    selected_class = training_class[workout_type]
+    training = selected_class(*workout_data)
     return training
 
 
 def main(training: Training) -> None:
-    """
-    Главная функция.
-    Вызывает метод создания класса тренировки.
-    Выводит результат вычислений в консоль фитнес трекера.
-    """
+    """Вызывает метод show_training_info, выводит результат в консоль."""
     info = training.show_training_info()
     readout = info.get_message()
     print(readout)
 
 
 if __name__ == '__main__':
-    packages: list[tuple[str, list]] = [
+    packages: list[tuple[str, list[int | float]]] = [
         ('SWM', [720, 1, 80, 25, 40]),
         ('RUN', [15000, 1, 75]),
         ('WLK', [9000, 1, 75, 180]),
     ]
 
-    for workout_type, data in packages:
-        package = read_package(workout_type, data)
+    for str_workout_type, data in packages:
+        package = read_package(str_workout_type, data)
         main(package)
