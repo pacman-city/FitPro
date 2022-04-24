@@ -5,8 +5,8 @@ from dataclasses import dataclass
 class InfoMessage:
     """
     Информационное сообщение о тренировке.
-    Получает данные из класса тренировка и создает
-    сообщение - строку для вывода на экран.
+    Получает данные из show_training_info.
+    Создает строку сообщение.
     Методы класса: get_message
     """
     training_type: str
@@ -44,9 +44,9 @@ class Training:
     Методы класса:
     get_distance | get_mean_speed | get_spent_calories | show_training_info
    """
-    LEN_STEP: float = 0.65  # meters in human step
-    M_IN_KM: float = 1000.0  # meters in kilometer
     MIN_IN_H: float = 60.0  # minutes in hour
+    M_IN_KM: float = 1000.0  # meters in kilometer
+    LEN_STEP: float = 0.65  # meters in human step
 
     def __init__(
             self,
@@ -96,8 +96,8 @@ class Running(Training):
     Методы класса:
     get_distance | get_mean_speed | get_spent_calories | show_training_info
    """
-    CALORIES_MEAN_SPEED_SHIFT: float = 1.79  # coefficient
-    CALORIES_MEAN_SPEED_MULTIPLIER: float = 18.0  # coefficient
+    CALORIES_MEAN_SPEED_SHIFT: float = 1.79
+    CALORIES_MEAN_SPEED_MULTIPLIER: float = 18.0
 
     def __init__(
             self,
@@ -126,8 +126,8 @@ class SportsWalking(Training):
    """
     CM_IN_M: float = 100.0  # sentiments in meter
     KMH_IN_MSEC: float = 0.278  # kph to mps reformer
-    CALORIES_WEIGHT_MULTIPLIER: float = 0.035  # coefficient
-    CALORIES_SPEED_HEIGHT_MULTIPLIER: float = 0.029  # coefficient
+    CALORIES_WEIGHT_MULTIPLIER: float = 0.035
+    CALORIES_SPEED_HEIGHT_MULTIPLIER: float = 0.029
 
     def __init__(
             self,
@@ -159,8 +159,8 @@ class Swimming(Training):
     Методы класса:
     get_distance | get_mean_speed | get_spent_calories | show_training_info
    """
-    CALORIES_MEAN_SPEED_SHIFT: float = 1.1  # coefficient
-    CALORIES_WEIGHT_MULTIPLIER: float = 2.0  # coefficient
+    CALORIES_MEAN_SPEED_SHIFT: float = 1.1
+    CALORIES_WEIGHT_MULTIPLIER: float = 2.0
     LEN_STEP: float = 1.38  # meters, swimming stroke length
 
     def __init__(
@@ -192,8 +192,8 @@ class Swimming(Training):
 
 def verify_data(
         workout_type: str,
-        training_types: list[str],
-        workout_data: list[int | float]):
+        training_types: list,
+        workout_data: list) -> None:
     if workout_type not in training_types:
         raise TypeError(f'read package error: '
                         f'unknown type of training: {workout_type}'
@@ -217,14 +217,14 @@ def verify_data(
 
 def read_package(
         workout_type: str,
-        workout_data: list[int | float]) -> Training:
+        workout_data: list) -> Training:
     """Определяет тип тренировки и создает класс нужного типа"""
     training_class = {
         'SWM': Swimming,
         'RUN': Running,
         'WLK': SportsWalking
     }
-    training_types = [*training_class]  # not.keys(), cause IDK how to type it
+    training_types = [*training_class]
     verify_data(workout_type, training_types, workout_data)
 
     selected_class = training_class[workout_type]
@@ -240,7 +240,7 @@ def main(training: Training) -> None:
 
 
 if __name__ == '__main__':
-    packages: list[tuple[str, list[int | float]]] = [
+    packages: list = [
         ('SWM', [720, 1, 80, 25, 40]),
         ('RUN', [15000, 1, 75]),
         ('WLK', [9000, 1, 75, 180]),
